@@ -8,12 +8,10 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import useGoogleSheetData from "../../hooks/useGoogleSheetData";
+import { useGoogleSheetContext } from "../../context/GoogleSheetContext";
 
 export default function BasicTableOne() {
-  const csvUrl =
-    "https://docs.google.com/spreadsheets/d/1YWeC3xAP8uN5JQvHT1cgJjGzvNBo4zPNARjIpUary84/export?format=csv&gid=0";
-  const { data: tableData, error } = useGoogleSheetData(csvUrl);
+  const { filteredData, error } = useGoogleSheetContext();
 
   if (error) {
     return <div>Error: {error}</div>;
@@ -27,7 +25,7 @@ export default function BasicTableOne() {
             {/* Table Header */}
             <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
               <TableRow>
-                {["SERIE","TIPO","SUBTIPO","MATERIAL","TRATAMIENTO","NOMBRE","PRECIO BASE","MULTIPLICADOR","PRECIO SUGERIDO"].map((header) => (
+                {["SERIE", "TIPO", "SUBTIPO", "MATERIAL", "TRATAMIENTO", "NOMBRE", "PRECIO BASE", "MULTIPLICADOR", "PRECIO SUGERIDO"].map((header) => (
                   <TableCell
                     key={header}
                     isHeader
@@ -41,7 +39,7 @@ export default function BasicTableOne() {
 
             {/* Table Body */}
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-              {tableData.map((row, index) => (
+              {filteredData.map((row, index) => (
                 <TableRow key={index}>
                   {row.map((cell, cellIndex) => (
                     <TableCell

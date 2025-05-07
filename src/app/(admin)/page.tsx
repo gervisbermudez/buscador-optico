@@ -1,29 +1,43 @@
-import type { Metadata } from "next";
-import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
+"use client";
+
 import React from "react";
-import MonthlyTarget from "@/components/ecommerce/MonthlyTarget";
-import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
-import StatisticsChart from "@/components/ecommerce/StatisticsChart";
-import RecentOrders from "@/components/ecommerce/RecentOrders";
-import DemographicCard from "@/components/ecommerce/DemographicCard";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import ComponentCard from "@/components/common/ComponentCard";
 import BasicTableOne from "@/components/tables/BasicTableOne";
-
-export const metadata: Metadata = {
-  title:
-    "Buscador",
-  description: "Buscador",
-};
+import { useGoogleSheetContext } from "@/context/GoogleSheetContext";
 
 export default function Ecommerce() {
+  const { filteredData, error } = useGoogleSheetContext();
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <div>
-      <PageBreadcrumb pageTitle="Resultados" />
+      {filteredData.length > 0 && (
+        <PageBreadcrumb pageTitle="Resultados" />)  
+      }
       <div className="space-y-6">
-        <ComponentCard title="Basic Table 1">
-          <BasicTableOne />
-        </ComponentCard>
+        {filteredData.length === 0 ? (
+          <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+            <p>
+              Presiona{" "}
+              <kbd className="font-mono text-sm bg-gray-200 px-1.5 py-0.5 rounded dark:bg-gray-700">
+                Ctrl
+              </kbd>{" "}
+              +{" "}
+              <kbd className="font-mono text-sm bg-gray-200 px-1.5 py-0.5 rounded dark:bg-gray-700">
+                K
+              </kbd>{" "}
+              para buscar
+            </p>
+          </div>
+        ) : (
+          <ComponentCard title="Resultados">
+            <BasicTableOne />
+          </ComponentCard>
+        )}
       </div>
     </div>
   );
