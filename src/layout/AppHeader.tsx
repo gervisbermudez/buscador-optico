@@ -2,8 +2,6 @@
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import { useSidebar } from "@/context/SidebarContext";
 import { useGoogleSheetContext } from "@/context/GoogleSheetContext";
-import Image from "next/image";
-import Link from "next/link";
 import React, { useState, useEffect, useRef } from "react";
 
 const AppHeader: React.FC = () => {
