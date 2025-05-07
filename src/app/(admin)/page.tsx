@@ -3,7 +3,6 @@
 import React from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import ComponentCard from "@/components/common/ComponentCard";
-import BasicTableOne from "@/components/tables/BasicTableOne";
 import { useGoogleSheetContext } from "@/context/GoogleSheetContext";
 import CardViewOne from "@/components/cards/CardViewOne";
 
