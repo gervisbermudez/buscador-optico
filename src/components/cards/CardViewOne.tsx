@@ -85,9 +85,9 @@ export default function CardViewOne() {
               </div>
               
         {/* Precio sugerido */}
-        <div className="mt-5 flex flex-col items-baseline text-green-600 dark:text-green-400 mb-4">
-            <span className="text-xl font-semibold">Precio sugerido:</span>
-            <span className="text-2xl font-bold ms-2">${row[8] /* PRECIO SUGERIDO */}</span>
+          <div className="mt-5 text-green-600 dark:text-green-400 mb-4">
+            <div className="text-xl text-center font-semibold">Precio sugerido:</div>
+            <div className="text-2xl text-center font-bold ms-2">${row[8] /* PRECIO SUGERIDO */}</div>
           </div>
         </div>
       ))}
