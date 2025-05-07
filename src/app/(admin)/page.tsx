@@ -5,6 +5,7 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import ComponentCard from "@/components/common/ComponentCard";
 import BasicTableOne from "@/components/tables/BasicTableOne";
 import { useGoogleSheetContext } from "@/context/GoogleSheetContext";
+import CardViewOne from "@/components/cards/CardViewOne";
 
 export default function Ecommerce() {
   const { filteredData, error } = useGoogleSheetContext();
@@ -16,7 +17,7 @@ export default function Ecommerce() {
   return (
     <div>
       {filteredData.length > 0 && (
-        <PageBreadcrumb pageTitle="Resultados" />)  
+        <PageBreadcrumb pageTitle="Elige uno" />)  
       }
       <div className="space-y-6">
         {filteredData.length === 0 ? (
@@ -34,8 +35,8 @@ export default function Ecommerce() {
             </p>
           </div>
         ) : (
-          <ComponentCard title="Resultados">
-            <BasicTableOne />
+          <ComponentCard title="Resultados de búsqueda">
+            <CardViewOne />
           </ComponentCard>
         )}
       </div>
