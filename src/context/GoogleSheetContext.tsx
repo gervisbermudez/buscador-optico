@@ -6,7 +6,11 @@ interface GoogleSheetContextType {
   data: string[][];
   filteredData: string[][];
   error: string | null;
-  setFilter: (filter: string) => void;
+  filters: string[];
+  searchTerm: string;
+  suggestions: string[]; // Nuevo array de sugerencias
+  toggleFilter: (filter: string) => void;
+  setSearchTerm: (term: string) => void;
 }
 
 const GoogleSheetContext = createContext<GoogleSheetContextType | undefined>(
@@ -20,9 +24,11 @@ export const GoogleSheetProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [data, setData] = useState<string[][]>([]);
-  const [filteredData, setFilteredData] = useState<string[][]>([]); // Inicialmente vacío
+  const [filteredData, setFilteredData] = useState<string[][]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<string>("");
+  const [filters, setFilters] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [suggestions, setSuggestions] = useState<string[]>([]); // Nuevo estado para sugerencias
 
   useEffect(() => {
     async function fetchData() {
@@ -33,6 +39,16 @@ export const GoogleSheetProvider: React.FC<{ children: React.ReactNode }> = ({
         // Parsear el CSV
         const rows = csvText.split("\n").map((row) => row.split(","));
         setData(rows.slice(1)); // Excluir la fila de encabezados
+
+        // Generar sugerencias únicas
+        const allWords = rows
+          .slice(1) // Excluir encabezados
+          .flat() // Aplanar el array
+          .map((cell) => cell.toLowerCase().match(/\b[a-zA-Z]+\b/g)) // Extraer solo palabras
+          .flat() // Aplanar nuevamente
+          .filter((word) => word && !isStopWord(word)) // Filtrar palabras vacías y stop words
+
+        setSuggestions(Array.from(new Set(allWords.filter((word): word is string => word !== null)))); // Eliminar duplicados y filtrar nulos
       } catch (err) {
         setError("Error fetching Google Sheet data");
         console.error(err);
@@ -42,24 +58,79 @@ export const GoogleSheetProvider: React.FC<{ children: React.ReactNode }> = ({
     fetchData();
   }, []);
 
+  const isStopWord = (word: string): boolean => {
+    const stopWords = [
+      "el",
+      "la",
+      "los",
+      "las",
+      "un",
+      "una",
+      "unos",
+      "unas",
+      "y",
+      "o",
+      "de",
+      "a",
+      "en",
+      "con",
+      "por",
+      "para",
+      "que",
+      "es",
+      "al",
+      "del",
+    ];
+    return stopWords.includes(word);
+  };
+
   useEffect(() => {
-    if (filter) {
-      const words = filter.toLowerCase().split(" "); // Dividir el término de búsqueda en palabras
+    const searchWords = searchTerm
+      .toLowerCase()
+      .split(" ")
+      .filter((word) => word.trim() !== "");
+
+    if (filters.length > 0 || searchWords.length > 0) {
       setFilteredData(
-        data.filter((row) =>
-          words.every((word) =>
-            row.some((cell) => cell.toLowerCase().includes(word))
-          )
-        )
+        data.filter((row) => {
+          const matchesFilters =
+            filters.length === 0 ||
+            filters.some((filter) =>
+              row.some((cell) => cell.includes(filter))
+            );
+          const matchesSearch =
+            searchWords.length === 0 ||
+            searchWords.some((word) =>
+              row.some((cell) => cell.toLowerCase().includes(word))
+            );
+          return matchesFilters && matchesSearch;
+        })
       );
     } else {
-      setFilteredData([]); // Si no hay filtro, no mostrar datos
+      setFilteredData([]);
     }
-  }, [filter, data]);
+  }, [filters, searchTerm, data]);
+
+  const toggleFilter = (filter: string) => {
+    setFilters((prevFilters) =>
+      prevFilters.includes(filter)
+        ? prevFilters.filter((f) => f !== filter)
+        : [...prevFilters, filter]
+    );
+  };
 
   return (
     <GoogleSheetContext.Provider
-      value={{ data, filteredData, error, setFilter }}
+      value={{
+        data,
+        filteredData,
+        error,
+        filters,
+        searchTerm,
+        suggestions, // Exponer sugerencias
+        toggleFilter,
+        setSearchTerm,
+      }}
     >
       {children}
     </GoogleSheetContext.Provider>

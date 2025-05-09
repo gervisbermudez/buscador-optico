@@ -6,10 +6,11 @@ import React, { useState, useEffect, useRef } from "react";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(""); // Estado para el término de búsqueda
-
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
-  const { setFilter } = useGoogleSheetContext(); // Consumir el método para filtrar datos
+  const { setSearchTerm, suggestions } = useGoogleSheetContext(); // Consumir sugerencias del contexto
+  const [searchTerm, setLocalSearchTerm] = useState(""); // Estado para el término de búsqueda
+  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
@@ -22,7 +23,6 @@ const AppHeader: React.FC = () => {
   const toggleApplicationMenu = () => {
     setApplicationMenuOpen(!isApplicationMenuOpen);
   };
-  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -41,8 +41,23 @@ const AppHeader: React.FC = () => {
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    setSearchTerm(value);
-    setFilter(value); // Actualizar el filtro en el contexto
+    setLocalSearchTerm(value);
+    setSearchTerm(value); // Actualizar el término de búsqueda en el contexto
+
+    // Filtrar sugerencias en tiempo real
+    setFilteredSuggestions(
+      value
+        ? suggestions.filter((suggestion) =>
+            suggestion.toLowerCase().startsWith(value.toLowerCase())
+          )
+        : [] // Si no hay texto, no mostrar sugerencias
+    );
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setLocalSearchTerm(suggestion);
+    setSearchTerm(suggestion); // Actualizar el término de búsqueda con la sugerencia seleccionada
+    setFilteredSuggestions([]); // Limpiar las sugerencias
   };
 
   return (
@@ -153,6 +168,19 @@ const AppHeader: React.FC = () => {
                   onChange={handleSearchChange} // Manejar cambios en el input
                   className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
                 />
+                {filteredSuggestions.length > 0 && (
+                  <ul className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700">
+                    {filteredSuggestions.map((suggestion, index) => (
+                      <li
+                        key={index}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        {suggestion}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </form>
           </div>
@@ -175,6 +203,7 @@ const AppHeader: React.FC = () => {
     
         </div>
       </div>
+
     </header>
   );
 };
