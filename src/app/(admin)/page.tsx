@@ -35,7 +35,7 @@ export default function Ecommerce() {
     return <div>Error: {error}</div>;
   }
 
-  const showResults = filters.length > 0 || searchTerm.trim() !== "";
+  const showResults = filters.length > 0 || searchTerm.trim() !== "" || (isFilterActive && (numericFilters.esf || numericFilters.cil || numericFilters.add));
 
   return (
     <div>
@@ -146,6 +146,21 @@ export default function Ecommerce() {
           </div>
         )}
       </div>
+
+      {/* Footer */} 
+      <footer className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+        <p>
+          Aviso: La información presentada es referencial y puede no reflejar precios actualizados. Para datos oficiales, consulte su lista en: 
+          <a 
+        href="https://gestion.vitolen.com" 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        className="text-blue-500 hover:underline dark:text-blue-400"
+          >
+        👉 https://gestion.vitolen.com
+          </a>
+        </p>
+      </footer>
     </div>
   );
 }

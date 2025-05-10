@@ -55,8 +55,8 @@ export const GoogleSheetProvider: React.FC<{ children: React.ReactNode }> = ({
           .flat() // Aplanar el array
           .map((cell) => cell.toLowerCase().match(/\b[a-zA-Z]+\b/g)) // Extraer solo palabras
           .flat() // Aplanar nuevamente
-          .filter((word) => word && !isStopWord(word)) // Filtrar palabras vacías y stop words
-
+          // Filtrar palabras vacías, stop words y palabras con más de 1 letra
+          .filter((word) => word && word.length > 1 && !isStopWord(word))
         setSuggestions(Array.from(new Set(allWords.filter((word): word is string => word !== null)))); // Eliminar duplicados y filtrar nulos
       } catch (err) {
         setError("Error fetching Google Sheet data");
@@ -100,7 +100,34 @@ export const GoogleSheetProvider: React.FC<{ children: React.ReactNode }> = ({
       .filter((word) => word.trim() !== "");
 
     setFilteredData(
-      data.filter((row) => {
+      data
+        .filter((row, index) => {
+          if (isFilterActive && numericFilters.add !== "") { 
+            const addValue = parseFloat(numericFilters.add);
+            const addMin = parseFloat(row[14]);
+            const addMax = parseFloat(row[15]);
+            // Si addMin y addMax son NaN, no se aplica el filtro
+            if (addValue && !isNaN(addMin) && !isNaN(addMax)) {
+              if (addValue >= addMin && addValue <= addMax) {
+                return true;
+              }
+            }
+            return false; // Si no se aplica el filtro, se devuelve false
+          }
+          return true;
+        }
+      ).filter((row, index) => {
+          
+        console.log({
+          row,
+          index,
+          filters,
+          searchWords,
+          isFilterActive,
+          numericFilters,
+        });
+        
+
         const matchesFilters =
           filters.length === 0 ||
           filters.some((filter) =>
@@ -112,17 +139,8 @@ export const GoogleSheetProvider: React.FC<{ children: React.ReactNode }> = ({
           searchWords.some((word) =>
             row.some((cell) => cell.toLowerCase().includes(word))
           );
-
-        const matchesAddFilter =
-          !isFilterActive || // Solo aplicar el filtro si el botón está activo
-          numericFilters.add.trim() !== "" ||
-          !row.some((cell) =>
-            ["progresivo", "1er progresivo", "ocupacional", "1er ocupacional", "bifocal"].some((term) =>
-              cell.toLowerCase().includes(term)
-            )
-          );
-
-        return matchesFilters && matchesSearch && matchesAddFilter;
+        
+        return matchesFilters && matchesSearch;
       })
     );
   }, [filters, searchTerm, numericFilters.add, isFilterActive, data]);
@@ -133,10 +151,6 @@ export const GoogleSheetProvider: React.FC<{ children: React.ReactNode }> = ({
         ? prevFilters.filter((f) => f !== filter)
         : [...prevFilters, filter]
     );
-  };
-
-  const updateNumericFilters = (filters: { esf: string; cil: string; add: string }) => {
-    setNumericFilters(filters);
   };
 
   return (

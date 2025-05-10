@@ -100,11 +100,12 @@ const AppHeader: React.FC = () => {
           </div>
             <button
               onClick={() => setIsFilterActive(!isFilterActive)} // Alternar el estado del filtro
-              className={`ml-2.5 flex items-center justify-center w-10 h-10 text-gray-500 bg-gray-200 rounded-lg dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-700 ${
-                isFilterActive ? "bg-blue-500 text-white" : ""
+              className={`ml-2.5 flex items-center justify-center gap-2.5 px-4 h-10 text-gray-800 bg-gray-200 rounded-lg dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-700 ${
+                isFilterActive ? "bg-blue-500 text-gray-600" : ""
               }`}
               aria-label="Toggle Filters"
-            >
+            > 
+              Graduación
               {/* Icono de filtro */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
