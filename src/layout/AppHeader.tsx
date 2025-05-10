@@ -2,6 +2,7 @@
 
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import { useAppHeader } from "@/hooks/useAppHeader";
+import { useGoogleSheetContext } from "@/context/GoogleSheetContext";
 import React from "react";
 
 const AppHeader: React.FC = () => {
@@ -13,11 +14,15 @@ const AppHeader: React.FC = () => {
     activeSuggestionIndex,
     inputRef,
     handleToggle,
-    toggleApplicationMenu,
     handleSearchChange,
     handleSuggestionClick,
     handleKeyDown,
   } = useAppHeader();
+
+  const {
+    isFilterActive,
+    setIsFilterActive, // Usar el estado del contexto
+  } = useGoogleSheetContext();
 
   return (
     <header className="sticky top-0 flex w-full bg-white border-gray-200 z-99999 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
@@ -63,6 +68,7 @@ const AppHeader: React.FC = () => {
           </button>
 
           {/* Search Input */}
+          <div className="flex items-center w-full gap-2 px-3">
           <div className="relative">
             <input
               ref={inputRef}
@@ -91,6 +97,30 @@ const AppHeader: React.FC = () => {
                 ))}
               </ul>
             )}
+          </div>
+            <button
+              onClick={() => setIsFilterActive(!isFilterActive)} // Alternar el estado del filtro
+              className={`ml-2.5 flex items-center justify-center w-10 h-10 text-gray-500 bg-gray-200 rounded-lg dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-700 ${
+                isFilterActive ? "bg-blue-500 text-white" : ""
+              }`}
+              aria-label="Toggle Filters"
+            >
+              {/* Icono de filtro */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707v4.586a1 1 0 01-.293.707l-2 2A1 1 0 0110 20v-6.586a1 1 0 00-.293-.707L3.293 6.707A1 1 0 013 6V4z"
+                />
+              </svg>
+            </button>
           </div>
         </div>
 

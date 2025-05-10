@@ -11,6 +11,9 @@ interface GoogleSheetContextType {
   suggestions: string[]; // Nuevo array de sugerencias
   toggleFilter: (filter: string) => void;
   setSearchTerm: (term: string) => void;
+  setNumericFilters: (filters: { esf: string; cil: string; add: string }) => void; // Nueva función para actualizar valores numéricos
+  isFilterActive: boolean; // Nuevo estado para controlar el botón de filtro
+  setIsFilterActive: (active: boolean) => void; // Nueva función para actualizar el estado del botón de filtro
 }
 
 const GoogleSheetContext = createContext<GoogleSheetContextType | undefined>(
@@ -29,6 +32,12 @@ export const GoogleSheetProvider: React.FC<{ children: React.ReactNode }> = ({
   const [filters, setFilters] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [suggestions, setSuggestions] = useState<string[]>([]); // Nuevo estado para sugerencias
+  const [numericFilters, setNumericFilters] = useState({
+    esf: "",
+    cil: "",
+    add: "",
+  }); // Estado para los filtros numéricos
+  const [isFilterActive, setIsFilterActive] = useState(false); // Nuevo estado para controlar el botón de filtro
 
   useEffect(() => {
     async function fetchData() {
@@ -90,26 +99,33 @@ export const GoogleSheetProvider: React.FC<{ children: React.ReactNode }> = ({
       .split(" ")
       .filter((word) => word.trim() !== "");
 
-    if (filters.length > 0 || searchWords.length > 0) {
-      setFilteredData(
-        data.filter((row) => {
-          const matchesFilters =
-            filters.length === 0 ||
-            filters.some((filter) =>
-              row.some((cell) => cell.includes(filter))
-            );
-          const matchesSearch =
-            searchWords.length === 0 ||
-            searchWords.some((word) =>
-              row.some((cell) => cell.toLowerCase().includes(word))
-            );
-          return matchesFilters && matchesSearch;
-        })
-      );
-    } else {
-      setFilteredData([]);
-    }
-  }, [filters, searchTerm, data]);
+    setFilteredData(
+      data.filter((row) => {
+        const matchesFilters =
+          filters.length === 0 ||
+          filters.some((filter) =>
+            row.some((cell) => cell.includes(filter))
+          );
+
+        const matchesSearch =
+          searchWords.length === 0 ||
+          searchWords.some((word) =>
+            row.some((cell) => cell.toLowerCase().includes(word))
+          );
+
+        const matchesAddFilter =
+          !isFilterActive || // Solo aplicar el filtro si el botón está activo
+          numericFilters.add.trim() !== "" ||
+          !row.some((cell) =>
+            ["progresivo", "1er progresivo", "ocupacional", "1er ocupacional", "bifocal"].some((term) =>
+              cell.toLowerCase().includes(term)
+            )
+          );
+
+        return matchesFilters && matchesSearch && matchesAddFilter;
+      })
+    );
+  }, [filters, searchTerm, numericFilters.add, isFilterActive, data]);
 
   const toggleFilter = (filter: string) => {
     setFilters((prevFilters) =>
@@ -117,6 +133,10 @@ export const GoogleSheetProvider: React.FC<{ children: React.ReactNode }> = ({
         ? prevFilters.filter((f) => f !== filter)
         : [...prevFilters, filter]
     );
+  };
+
+  const updateNumericFilters = (filters: { esf: string; cil: string; add: string }) => {
+    setNumericFilters(filters);
   };
 
   return (
@@ -127,9 +147,12 @@ export const GoogleSheetProvider: React.FC<{ children: React.ReactNode }> = ({
         error,
         filters,
         searchTerm,
-        suggestions, // Exponer sugerencias
+        suggestions,
         toggleFilter,
         setSearchTerm,
+        setNumericFilters,
+        isFilterActive, // Exponer el estado
+        setIsFilterActive, // Exponer la función para actualizar el estado
       }}
     >
       {children}
