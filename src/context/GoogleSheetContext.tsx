@@ -101,7 +101,7 @@ export const GoogleSheetProvider: React.FC<{ children: React.ReactNode }> = ({
 
     setFilteredData(
       data
-        .filter((row, index) => {
+        .filter((row) => {
           if (isFilterActive && numericFilters.add !== "") { 
             const addValue = parseFloat(numericFilters.add);
             const addMin = parseFloat(row[14]);
